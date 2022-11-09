@@ -89,21 +89,15 @@ def function_factory(trg_language):
                 trg_sentence_list.append(div.text.strip())
 
         print(f'\n{languages[trg_language]} Translations:')
-        file_handler.write('\nWords:' + '\n')
-        for entry in word_list:
-            print(' ', entry)
-            file_handler.write(' ' + entry + '\n')
-        
-        print(f'\n{languages[src_language - 1]} Examples:')
-        file_handler.write(f'\n{languages[src_language - 1]} Sentences:' + '\n')
-        for entry in src_sentence_list:
-            print(' ', entry)
-            file_handler.write(' ' + entry + '\n')
-        print(f'\n{languages[trg_language]} Examples:')
-        file_handler.write(f'\n{languages[trg_language]} Sentences:' + '\n')
-        for entry in trg_sentence_list:
-            print(' ', entry)
-            file_handler.write(' ' + entry + '\n')
+        print(word_list[0])
+        file_handler.write(word_list[0])
+
+        print(f'\n{languages[trg_language]} Example:')
+        print(src_sentence_list[0])
+        file_handler.write(src_sentence_list[0])
+
+        print(trg_sentence_list[0])
+        file_handler.write(trg_sentence_list[0])
 
         file_handler.close()
 

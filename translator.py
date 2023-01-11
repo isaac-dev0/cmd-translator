@@ -1,107 +1,97 @@
 import requests
+import sys
 
 from bs4 import BeautifulSoup
 
-languages = ['Arabic', 'German', 'English', 'Spanish', 'French', 'Hebrew',
-             'Japanese', 'Dutch', 'Polish', 'Portuguese', 'Romanian', 'Russian',
-             'Turkish']
+languages = [ "arabic", "german", "english", "spanish", "french",
+              "hebrew", "japanese", "dutch", "polish", "portuguese",
+              "romanian", "russian", "turkish" ]
 
-print('Hello, welcome to the translator. The translator supports:')
-for choice in range(len(languages)):
-    print(f'{choice + 1}.', languages[choice])
+word = 'DEFAULT'
 
-print('Type the number of your language:')
-src_language = int(input())
+args = sys.argv
 
-print('Type the number of language you want to translate to or 0 to translate to all languages:')
-trg_language = int(input())
-
-print('Type the word you would like to translate:')
-word_to_translate = input()
-
-def language_chain_factory(trg_language):
-    language_chain = f'{languages[src_language - 1]}-{languages[trg_language]}'.lower()
-    return language_chain
-
-def api_factory(language_chain):
-    build_url = f'https://context.reverso.net/translation/{language_chain}/{word_to_translate}'
-    return build_url
-
-def request_factory(build_url):
-    get_url = requests.get(build_url, headers={'User-Agent': 'Mozilla/5.0'})
-    return get_url
-
-def html_factory(get_url):
-    get_html = BeautifulSoup(get_url.content, 'html.parser')
-    return get_html
-
-def function_factory(trg_language):
-    language_chain = language_chain_factory(trg_language)
-    build_url = api_factory(language_chain)
-    get_url = request_factory(build_url)
-    get_html = html_factory(get_url)
-
-    file_handler = open(f'{word_to_translate}.txt', mode='a', encoding='utf-8')
-
-    def scrape_factory():
-
-        word_list = []
-
-        src_sentence_list = []
-        trg_sentence_list = []
-
-        find_display_term = get_html.findAll('span', {'class': 'display-term'})
-
-        find_trg_ltr = get_html.findAll('div', {'class': 'trg ltr'})
-        find_src_ltr = get_html.findAll('div', {'class': 'src ltr'})
-
-        find_src_arabic = get_html.findAll('div', {'class': 'src rtl'})
-        find_trg_arabic = get_html.findAll('div', {'class': 'trg rtl arabic'})
-
-        find_src_hebrew = get_html.findAll('div', {'class': 'src rtl'})
-        find_trg_hebrew = get_html.findAll('div', {'class': 'trg rtl'})
-
-        find_arabic_span = get_html.find('span', {'lang': 'ar'})
-
-        for find_arabic_span in find_src_arabic:
-            src_sentence_list.append(find_arabic_span.text.strip())
-        for find_arabic_span in find_trg_arabic:
-            trg_sentence_list.append(find_arabic_span.text.strip())
-
-        for span in find_display_term:
-            word_list.append(span.text)
-
-        for div in find_src_ltr:
-            src_sentence_list.append(div.text.strip())
-        for div in find_src_hebrew:
-            src_sentence_list.append(div.text.strip())
-        for div in find_trg_ltr:
-            trg_sentence_list.append(div.text.strip())
-        for div in find_trg_hebrew:
-            trg_sentence_list.append(div.text.strip())
-
-        file_handler.write(f'\n{languages[trg_language]} Translations:\n')
-        file_handler.write(word_list[0] + '\n')
-
-        file_handler.write(f'\n{languages[trg_language]} Example:\n')
-        file_handler.write(src_sentence_list[0] + '\n')
-        file_handler.write(trg_sentence_list[0] + '\n')
-
-        file_handler.close()
-
-        read_file = open(f'{word_to_translate}.txt', mode='r', encoding='utf-8')
-        print(read_file.read())
-
-        read_file.close()
-
-    if get_url.status_code == 200:
-        scrape_factory()
+def contains_args():
+    if len(sys.argv) > 1:
+        return True
     else:
-        print('Uh oh, that does not work.')
+        return False
 
-if trg_language == 0:
-    for lang in languages:
-        if lang != languages[src_language - 1]:
-            function_factory(languages.index(lang))
-else:
-    function_factory(trg_language - 1)
+def welcome():
+    # Checking if the user is passing in args or not.
+    if contains_args() == True:
+        # Taking args for source_language, target_language and word - converting them to lowercase.4 
+        source_language = args[1].lower()
+        target_language = args[2].lower()
+        word = args[3].lower()
+        file = open(f'{word}.txt', mode='w', encoding='utf-8')
+        # Passing in target_language to all() and checking if True or False.
+        if all(target_language) == True:
+            # Getting the list index of the user's input for source_language.
+            source_language_index = languages.index(source_language)
+            # Getting the index of each language in the languages list
+            for language in languages:
+                target_language_index = languages.index(language)
+                query(source_language_index, target_language_index, word, file)
+        # If the user doesn't enter 'all' as target_language, run this block of code.
+        else:
+            source_language_index = languages.index(source_language)
+            target_language_index = languages.index(target_language)
+            query(source_language_index, target_language_index, word, file)
+    else:
+        print("Hello, welcome to the translator. The translator supports:")
+        
+        for language in range(len(languages)):
+            print(languages[language])
+
+        print("Enter the language you would like to translate from.")
+        source_language = str(input())
+
+        print("Enter the language you would like to translate to.")
+        target_language = str(input())
+
+        print("Enter the word you would like to translate.")
+        word = str(input())
+
+        file = open(f'{word}.txt', mode='w', encoding='utf-8')
+        query(source_language, target_language, word, file)
+
+    file.close()
+    
+    file = open(f'{word}.txt', mode='r', encoding='utf-8')
+    print(file.read())
+    file.close()
+
+def all(target_language):
+    if target_language == 'all':
+        return True
+    else: 
+        return False
+
+def query(source_language_index, target_language_index, word, file):
+    url = f"https://context.reverso.net/translation/{languages[source_language_index]}-{languages[target_language_index]}/{word}"
+    header = requests.get(url, headers={'User-Agent': 'Mozilla/5.0'})
+    parser = BeautifulSoup(header.content, 'html.parser')
+
+    translated_words = parser.findAll('span', {'class': 'display-term'})
+    source_sentences = parser.findAll('div', {'class': 'src ltr'})
+
+    if languages[target_language_index] == "arabic":
+        target_sentences = parser.findAll('div', {'class': 'trg rtl arabic'})
+        
+    elif languages[target_language_index] == "hebrew":
+        target_sentences = parser.findAll('div', {'class': 'trg rtl'})
+
+    else:
+        target_sentences = parser.findAll('div', {'class': 'trg ltr'})
+
+    file.write(f'{languages[target_language_index].capitalize()} Translations:\n')
+    for word in translated_words[:5]:
+        file.write(f'{word.text}\n')
+
+    file.write(f'\n{languages[target_language_index].capitalize()} Examples:\n')
+    for (a, b) in zip(source_sentences[:5], target_sentences[:5]):
+        file.write(f'{a.text.strip()}\n{b.text.strip()}\n\n')
+
+
+welcome()

@@ -1,12 +1,36 @@
 import requests
 import sys
+import argparse
 
 from bs4 import BeautifulSoup
 
 # List of languages that the translator can translate to and from.
-languages = [ "arabic", "german", "english", "spanish", "french",
-              "hebrew", "japanese", "dutch", "polish", "portuguese",
-              "romanian", "russian", "turkish", "all" ]
+languages = [ 
+                "arabic", 
+                "german", 
+                "english", 
+                "spanish", 
+                "french", 
+                "hebrew", 
+                "japanese", 
+                "dutch", 
+                "polish", 
+                "portuguese",
+                "romanian", 
+                "russian", 
+                "turkish", 
+                "swedish", 
+                "ukrainian", 
+                "all" 
+            ]
+
+x = argparse.ArgumentParser(
+    description='''Translator Program ''',
+    epilog="""© Copyright 2023. Isaac Dolphin""")
+x.add_argument('src', nargs='*', help='Language translating from.')
+x.add_argument('trg', nargs='*', help='Language translating to.')
+x.add_argument('word', nargs='*', help='Word translating')
+y = x.parse_args()
 
 # Default word to translate
 word = 'DEFAULT'
